@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "graal_script",
+  "version": "${version}",
+  "name": "Graal Script",
+  "description": "Brings The Power Of GraalVm Javascript To Minecraft",
+  "authors": [
+    "Space_Mex"
+  ],
+  "license": "All Rights Reserved",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.github.spacemex.graalscript.client.GraalScriptFabricClient"
+    ],
+    "main": [
+      "com.github.spacemex.graalscript.GraalScriptFabric"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.5",
+    "minecraft": "~26.1",
+    "java": ">=25",
+    "architectury": ">=20.0.2",
+    "fabric-api": "*"
+  }
+}

@@ -1,0 +1,24 @@
+license = "All Right Reserved"
+
+[[mods]]
+modId = "graal_script"
+version = "${version}"
+displayName = "Graal Script"
+authors = "Space_Mex"
+description = '''
+Brings The Power Of GraalVm Javascript To Minecraft
+'''
+
+[[dependencies.graal_script]]
+modId = "neoforge"
+type = "required"
+versionRange = "[26.1.0.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.graal_script]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.1,)"
+ordering = "NONE"
+side = "BOTH"
