@@ -2,10 +2,13 @@
 package com.github.spacemex.graalscript.api.event;
 
 import com.github.spacemex.graalscript.runtime.ScriptScope;
+import org.graalvm.polyglot.Value;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class ScriptEventRegistry {
 
@@ -48,10 +51,7 @@ public final class ScriptEventRegistry {
         }
     }
 
-    public synchronized void setDispatcher(
-            ScriptScope scope,
-            ScriptEventDispatcher dispatcher
-    ) {
+    public synchronized void setDispatcher(ScriptScope scope, ScriptEventDispatcher dispatcher) {
         Objects.requireNonNull(scope);
         Objects.requireNonNull(dispatcher);
 
@@ -60,5 +60,51 @@ public final class ScriptEventRegistry {
                 event.setDispatcher(dispatcher);
             }
         }
+    }
+
+    public synchronized <T> ScriptEvent<T> register(String id, ScriptScope scope, Class<T> type, Consumer<ScriptEvent<T>> installer) {
+        Objects.requireNonNull(installer, "installer");
+
+        ScriptEvent<T> event = register(id, scope, type);
+
+        try {
+            installer.accept(event);
+        } catch (RuntimeException exception) {
+            events.remove(id);
+            throw exception;
+        }
+
+        return event;
+    }
+
+    public synchronized Map<String, ScriptEvent<?>> forScope(ScriptScope scope) {
+        Objects.requireNonNull(scope);
+
+        Map<String, ScriptEvent<?>> result = new LinkedHashMap<>();
+
+        events.forEach((id, event) -> {
+            if (event.scope() == scope) {
+                result.put(id, event);
+            }
+        });
+
+        return Collections.unmodifiableMap(result);
+    }
+
+    public ScriptSubscription listen(String id, ScriptScope scope, Value callback) {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(scope);
+
+        ScriptEvent<?> event;
+
+        synchronized (this) {
+            event = events.get(id);
+
+            if (event == null || event.scope() != scope) {
+                throw new IllegalArgumentException("Unknown " + scope + " script event: " + id);
+            }
+        }
+
+        return event.listen(callback);
     }
 }

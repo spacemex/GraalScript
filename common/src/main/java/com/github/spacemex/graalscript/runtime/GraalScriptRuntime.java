@@ -2,6 +2,7 @@ package com.github.spacemex.graalscript.runtime;
 
 import com.github.spacemex.graalscript.api.ScriptApiRegistry;
 import com.github.spacemex.graalscript.api.annotation.ScriptMethod;
+import com.github.spacemex.graalscript.api.event.ScriptEventRegistry;
 import com.github.spacemex.graalscript.typescript.TypeDefinitionGenerator;
 import com.github.spacemex.graalscript.typescript.TypeScriptCompiler;
 import com.github.spacemex.graalscript.typescript.TypeScriptWorkspaceGenerator;
@@ -27,10 +28,12 @@ public final class GraalScriptRuntime {
     private static final Logger LOGGER = LoggerFactory.getLogger("GraalScript");
     private final ScriptApiRegistry registry;
     private TypeScriptCompiler compiler;
+    private final ScriptEventRegistry events;
     private final Map<ScriptScope, Context> contexts = new EnumMap<>(ScriptScope.class);
 
-    public GraalScriptRuntime(ScriptApiRegistry registry) {
+    public GraalScriptRuntime(ScriptApiRegistry registry, ScriptEventRegistry events) {
         this.registry = registry;
+        this.events = events;
     }
 
     public synchronized void start(ScriptScope scope) {
@@ -50,7 +53,8 @@ public final class GraalScriptRuntime {
                 TypeDefinitionGenerator.generate(
                         root,
                         declarationScope,
-                        registry.forScope(declarationScope)
+                        registry.forScope(declarationScope),
+                        events
                 );
             }
 

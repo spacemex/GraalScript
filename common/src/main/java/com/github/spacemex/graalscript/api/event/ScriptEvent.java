@@ -40,6 +40,9 @@ public final class ScriptEvent<T> {
         return scope;
     }
 
+    public Class<T> payloadType() {
+        return type;
+    }
 
     public synchronized ScriptSubscription listen(Value callback) {
         Objects.requireNonNull(callback, "callback");

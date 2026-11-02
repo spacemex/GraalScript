@@ -1,8 +1,11 @@
 package com.github.spacemex.graalscript.typescript;
 
 import com.github.spacemex.graalscript.api.annotation.ScriptCallback;
+import com.github.spacemex.graalscript.api.annotation.ScriptEventRouter;
 import com.github.spacemex.graalscript.api.annotation.ScriptMethod;
 import com.github.spacemex.graalscript.api.annotation.ScriptType;
+import com.github.spacemex.graalscript.api.event.ScriptEvent;
+import com.github.spacemex.graalscript.api.event.ScriptEventRegistry;
 import com.github.spacemex.graalscript.runtime.ScriptScope;
 import org.graalvm.polyglot.Value;
 
@@ -23,8 +26,7 @@ public final class TypeDefinitionGenerator {
     private TypeDefinitionGenerator() {
     }
 
-    public static void generate(Path root, ScriptScope scope, Map<String, Object> bindings) throws IOException {
-
+    public static void generate(Path root, ScriptScope scope, Map<String, Object> bindings, ScriptEventRegistry events) throws IOException {
         Path output = root.resolve("generated")
                 .resolve(scope.getDirectory() + ".d.ts");
 
@@ -36,6 +38,11 @@ public final class TypeDefinitionGenerator {
         builder.append("// Do not edit manually.\n\n");
 
         Map<String, Class<?>> eventTypes = new LinkedHashMap<>();
+
+        // Discover every event payload for this environment.
+        for (ScriptEvent<?> event : events.forScope(scope).values()) {
+            registerScriptType(eventTypes, event.payloadType());
+        }
 
         for (Object instance : bindings.values()) {
             for (Method method : instance.getClass().getMethods()) {
@@ -75,8 +82,7 @@ public final class TypeDefinitionGenerator {
                     .append(entry.getKey())
                     .append(" {\n");
 
-            appendMethods(builder, entry.getValue());
-
+            appendMethods(builder, entry.getValue(), scope, events);
             builder.append("}\n\n");
         }
 
@@ -88,8 +94,7 @@ public final class TypeDefinitionGenerator {
                     .append(entry.getKey())
                     .append(": {\n");
 
-            appendMethods(builder, entry.getValue().getClass());
-
+            appendMethods(builder, entry.getValue().getClass(), scope, events);
             builder.append("};\n\n");
         }
 
@@ -131,10 +136,7 @@ public final class TypeDefinitionGenerator {
     }
 
 
-    private static void appendMethods(
-            StringBuilder builder,
-            Class<?> type
-    ) {
+    private static void appendMethods(StringBuilder builder, Class<?> type, ScriptScope scope, ScriptEventRegistry events) {
         Method[] methods = type.getMethods();
 
         Arrays.sort(
@@ -162,9 +164,37 @@ public final class TypeDefinitionGenerator {
                         .append(" */\n");
             }
 
-            builder.append("  ")
-                    .append(method.getName())
-                    .append("(");
+            if (method.isAnnotationPresent(ScriptEventRouter.class)) {
+
+                if (method.getParameterCount() != 2
+                        || method.getParameterTypes()[0] != String.class
+                        || method.getParameterTypes()[1] != Value.class) {
+                    throw new IllegalStateException(
+                            "@ScriptEventRouter requires (String, Value): " + method
+                    );
+                }
+
+                for (ScriptEvent<?> event : events.forScope(scope).values()) {
+
+                    String eventType = getScriptTypeName(
+                            event.payloadType()
+                    );
+
+                    builder.append("  ")
+                            .append(method.getName())
+                            .append("(id: \"")
+                            .append(event.id())
+                            .append("\", listener: (event: ")
+                            .append(eventType)
+                            .append(") => void): ")
+                            .append(mapType(method.getReturnType()))
+                            .append(";\n");
+                }
+
+                continue;
+            }
+
+            builder.append("  ").append(method.getName()).append("(");
 
             ScriptCallback callback =
                     method.getAnnotation(ScriptCallback.class);
