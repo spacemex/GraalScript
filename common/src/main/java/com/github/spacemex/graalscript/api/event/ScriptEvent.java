@@ -23,8 +23,7 @@ public final class ScriptEvent<T> {
     private long nextListenerId = 1;
     private long generation = 0;
 
-    private record Listener(Value callback, ScriptSubscription subscription) {
-    }
+    private record Listener(Value callback, ScriptSubscription subscription) {}
 
     ScriptEvent(String id, ScriptScope scope, Class<T> type) {
         this.id = id;
@@ -48,16 +47,11 @@ public final class ScriptEvent<T> {
         Objects.requireNonNull(callback, "callback");
 
         if (!callback.canExecute()) {
-            throw new IllegalArgumentException(
-                    "Event " + id + " requires a JavaScript function"
-            );
+            throw new IllegalArgumentException("Event " + id + " requires a JavaScript function");
         }
 
         if (dispatcher != null && !dispatcher.isEventThread()) {
-            throw new IllegalStateException(
-                    "Cannot register listener for " + id +
-                            " outside its event thread"
-            );
+            throw new IllegalStateException("Cannot register listener for " + id + " outside its event thread");
         }
 
         Thread current = Thread.currentThread();
@@ -65,20 +59,13 @@ public final class ScriptEvent<T> {
         if (ownerThread == null) {
             ownerThread = current;
         } else if (ownerThread != current) {
-            throw new IllegalStateException(
-                    "Event " + id + " belongs to another script thread"
-            );
+            throw new IllegalStateException("Event " + id + " belongs to another script thread");
         }
 
         long listenerId = nextListenerId++;
+        ScriptSubscription subscription = new ScriptSubscription(() -> remove(listenerId));
 
-        ScriptSubscription subscription =
-                new ScriptSubscription(() -> remove(listenerId));
-
-        listeners.put(
-                listenerId,
-                new Listener(callback, subscription)
-        );
+        listeners.put(listenerId, new Listener(callback, subscription));
 
         return subscription;
     }
@@ -110,24 +97,15 @@ public final class ScriptEvent<T> {
 
         if (target != null && !target.isEventThread()) {
             try {
-                target.execute(
-                        () -> dispatchNow(payload, expectedGeneration)
-                );
+                target.execute(() -> dispatchNow(payload, expectedGeneration));
             } catch (RuntimeException exception) {
-                LOGGER.error(
-                        "Failed to schedule event {}",
-                        id,
-                        exception
-                );
+                LOGGER.error("Failed to schedule event {}", id, exception);
             }
             return;
         }
 
         if (Thread.currentThread() != expectedThread) {
-            LOGGER.error(
-                    "Event {} fired from an invalid thread",
-                    id
-            );
+            LOGGER.error("Event {} fired from an invalid thread", id);
             return;
         }
 
@@ -150,12 +128,8 @@ public final class ScriptEvent<T> {
                 return;
             }
 
-            if (Thread.currentThread() != ownerThread ||
-                    (dispatcher != null && !dispatcher.isEventThread())) {
-                throw new IllegalStateException(
-                        "Synchronous event " + id +
-                                " must execute on its script thread"
-                );
+            if (Thread.currentThread() != ownerThread || (dispatcher != null && !dispatcher.isEventThread())) {
+                throw new IllegalStateException("Synchronous event " + id + " must execute on its script thread");
             }
 
             expectedGeneration = generation;
@@ -174,12 +148,8 @@ public final class ScriptEvent<T> {
                 return;
             }
 
-            if (Thread.currentThread() != ownerThread ||
-                    (dispatcher != null && !dispatcher.isEventThread())) {
-                LOGGER.error(
-                        "Event {} was dispatched on an invalid thread",
-                        id
-                );
+            if (Thread.currentThread() != ownerThread || (dispatcher != null && !dispatcher.isEventThread())) {
+                LOGGER.error("Event {} was dispatched on an invalid thread", id);
                 return;
             }
 
@@ -194,11 +164,7 @@ public final class ScriptEvent<T> {
             try {
                 listener.callback().execute((Object) payload);
             } catch (RuntimeException exception) {
-                LOGGER.error(
-                        "Script callback failed for event {}",
-                        id,
-                        exception
-                );
+                LOGGER.error("Script callback failed for event {}", id, exception);
             }
         }
     }
@@ -211,9 +177,7 @@ public final class ScriptEvent<T> {
         }
     }
 
-    synchronized void setDispatcher(
-            ScriptEventDispatcher dispatcher
-    ) {
+    synchronized void setDispatcher(ScriptEventDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
@@ -231,6 +195,4 @@ public final class ScriptEvent<T> {
         // Discards tasks queued by a previous runtime.
         generation++;
     }
-
-
 }

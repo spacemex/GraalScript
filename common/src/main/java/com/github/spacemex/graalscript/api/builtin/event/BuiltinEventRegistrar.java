@@ -14,19 +14,14 @@ public final class BuiltinEventRegistrar {
 
     public static void register(ScriptEventRegistry events) {
 
-        events.register(
-                "graalscript:player_join",
-                ScriptScope.SERVER,
-                PlayerJoinEvent.class,
+        events.register("graalscript:player_join", ScriptScope.SERVER, PlayerJoinEvent.class,
                 event -> PlayerEvent.PLAYER_JOIN.register(player -> {
                     event.fire(new PlayerJoinEvent(player));
                 })
         );
 
         events.register(
-                "graalscript:attack_entity",
-                ScriptScope.SERVER,
-                EntityAttackEvent.class,
+                "graalscript:attack_entity", ScriptScope.SERVER, EntityAttackEvent.class,
                 event -> PlayerEvent.ATTACK_ENTITY.register((player, level, target, hand, hitResult) -> {
                     if (!(player instanceof ServerPlayer)) {
                         return EventResult.pass();

@@ -11,6 +11,9 @@ import com.github.spacemex.graalscript.api.event.ScriptSubscription;
 import com.github.spacemex.graalscript.runtime.ScriptScope;
 import org.graalvm.polyglot.Value;
 
+/**
+ * Registers All Builtin Server Events
+ */
 @ScriptBinding(name = "ServerEvents", scopes = {ScriptScope.SERVER})
 public final class ServerEvents {
 
@@ -29,20 +32,12 @@ public final class ServerEvents {
     @ScriptMethod(description = "Runs when a player joins the server.")
     @ScriptCallback(PlayerJoinEvent.class)
     public ScriptSubscription playerJoin(Value callback) {
-        return registry.listen(
-                "graalscript:player_join",
-                ScriptScope.SERVER,
-                callback
-        );
+        return registry.listen("graalscript:player_join", ScriptScope.SERVER, callback);
     }
 
     @ScriptMethod(description = "Runs before a player attacks an entity.")
     @ScriptCallback(EntityAttackEvent.class)
     public ScriptSubscription attackEntity(Value callback) {
-        return registry.listen(
-                "graalscript:attack_entity",
-                ScriptScope.SERVER,
-                callback
-        );
+        return registry.listen("graalscript:attack_entity", ScriptScope.SERVER, callback);
     }
 }

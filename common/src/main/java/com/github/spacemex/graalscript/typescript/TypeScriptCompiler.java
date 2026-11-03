@@ -85,8 +85,10 @@ public final class TypeScriptCompiler implements AutoCloseable {
             for (long i = 0; i < diagnostics.getArraySize(); i++) {
                 Value diagnostic = diagnostics.getArrayElement(i);
                 int code = diagnostic.getMember("code").asInt();
-                boolean error = diagnostic.getMember("category").asInt() == typescript.getMember("DiagnosticCategory").getMember("Error").asInt();
-                String message = typescript.getMember("flattenDiagnosticMessageText").execute(diagnostic.getMember("messageText"), "\n").asString();
+                boolean error = diagnostic.getMember("category").asInt() == typescript
+                        .getMember("DiagnosticCategory").getMember("Error").asInt();
+                String message = typescript.getMember("flattenDiagnosticMessageText")
+                        .execute(diagnostic.getMember("messageText"), "\n").asString();
                 int line = 1;
                 int column = 1;
                 Value start = diagnostic.getMember("start");
@@ -118,7 +120,6 @@ public final class TypeScriptCompiler implements AutoCloseable {
 
     public record Diagnostic(int code, String message, int line, int column, boolean error) {}
     public record CompilationResult(String javaScript, List<Diagnostic> diagnostics) {
-
         public boolean hasErrors() {
             return diagnostics.stream().anyMatch(Diagnostic::error);
         }

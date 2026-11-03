@@ -16,8 +16,7 @@ public final class TypeScriptWorkspaceGenerator {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private TypeScriptWorkspaceGenerator() {
-    }
+    private TypeScriptWorkspaceGenerator() {}
 
     public static void generate(Path root) throws IOException {
         Files.createDirectories(root.resolve("generated"));

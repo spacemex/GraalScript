@@ -67,9 +67,7 @@ public final class GraalScriptBootstrap {
         });
 
         LifecycleEvent.SERVER_STOPPED.register(server -> {
-
             EVENTS.clearScope(ScriptScope.SERVER);
-
             RUNTIME.stop(ScriptScope.SERVER);
         });
 
