@@ -2,6 +2,7 @@ package com.github.spacemex.graalscript.api.builtin.event;
 
 import com.github.spacemex.graalscript.api.annotation.ScriptMethod;
 import com.github.spacemex.graalscript.api.annotation.ScriptType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -15,23 +16,21 @@ public class EntityAttackEvent {
     private final Entity entity;
     private final InteractionHand hand;
     private final Level level;
-    private final String entitiesId;
     private final EntityHitResult blockHitResult;
 
     private boolean cancelled;
 
-    public EntityAttackEvent(ServerPlayer player, Level level, Entity target, InteractionHand hand, EntityHitResult hitResult, String entitiesId) {
+    public EntityAttackEvent(ServerPlayer player, Level level, Entity target, InteractionHand hand, EntityHitResult hitResult) {
         this.player = player;
         this.level = level;
         this.entity = target;
         this.hand = hand;
         this.blockHitResult = hitResult;
-        this.entitiesId = entitiesId;
     }
 
     @ScriptMethod(description = "Get the entities identifier")
     public String getEntityId() {
-        return entitiesId;
+        return BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString();
     }
 
     @ScriptMethod(description = "Get the hit entity")

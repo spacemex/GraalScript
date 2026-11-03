@@ -3,11 +3,8 @@ package com.github.spacemex.graalscript.api.builtin.event;
 
 import com.github.spacemex.graalscript.api.event.ScriptEventRegistry;
 import com.github.spacemex.graalscript.runtime.ScriptScope;
-
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.PlayerEvent;
-
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 
 public final class BuiltinEventRegistrar {
@@ -35,8 +32,7 @@ public final class BuiltinEventRegistrar {
                         return EventResult.pass();
                     }
 
-                    EntityAttackEvent payload = new EntityAttackEvent((ServerPlayer) player, level, target, hand, hitResult,
-                            BuiltInRegistries.ENTITY_TYPE.getKey(target.getType()).toString());
+                    EntityAttackEvent payload = new EntityAttackEvent((ServerPlayer) player, level, target, hand, hitResult);
 
                     event.fireSync(payload);
                     return payload.isCancelled() ? EventResult.interruptFalse() : EventResult.pass();
